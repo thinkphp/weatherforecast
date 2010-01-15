@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>select * from weather where location="bucharest" and unit="c";</title>
+   <link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/reset-fonts-grids/reset-fonts-grids.css" type="text/css">
+   <link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/base/base.css" type="text/css">
+   <style type="text/css">
+    html,body{font-family: calibri "arial rounded mt bold","lucida grande",arial,sans-serif;background: #6387B3}
+    #doc2{background:#f8f8f8;border:1em solid #f8f8f8;-moz-border-radius:10px;-webkit-border-radius: 10px;border-radius: 10px}
+    h1{font-size:200%;margin:10px 0;color: #fff;text-transform:capitalize;text-align: left;margin-left:20px}
+    label[for=airport]{font-size: 40px}
+    input{border: 1px solid #ccc;color: #000;font-size: 40px;padding: 10px;margin: 10px;text-align: center;-moz-border-radius:10px;-webkit-border-radius: 10px;border-radius: 10px}
+    input:focus{background: #D2E5FF}
+    .valid{color: lightgreen;font-size: 20px}
+    .invalid{color: red;font-size: 20px}
+    #results{width: 400px;margin-left: 120px}
+    #ft {margin:3em 0 1em 0;color:#ccc;}
+    #ft a{color:#ccc;}
+   </style>
+</head>
+<body>
+   <div id="hd" role="banner"><h1>Extending the weather API with YQL</h1></div>
+<div id="doc2" class="yui-t7">
+   <div id="bd" role="main">
+	<div class="yui-g">
+        <p><label for="location">Location</label><input type="text" id="location" name="location" />
+            <input type="button" name="search" id="search" value="search"></p>
+        <p><div id="results"></div></p>
+	</div>
+
+   </div>
+<div id="ft" role="contentinfo"><p>Written By Adrian Statescu using YUI, YQL and <a href="weather.woeid.xml">Data Open Table</a></p></div></div>
+<script type="text/javascript">
+
+        /* Utilities */
+        var DOMhelp = {
+
+            addEvent: function(elem,evType,fn,useCapture) {
+
+                      if(elem.addEventListener) {
+
+                        return elem.addEventListener(evType,fn,useCapture);
+
+                      } else if(elem.attachEvent) {
+
+                         var r = elem.attachEvent('on'+evType,fn);
+
+                         return r;
+
+                      } else {
+
+                        elem['on'+evType] = fn;
+                      }
+            },
+
+            $: function(id){return document.getElementById(id);}  
+        };
+
+        //show me love to the singleton
+        var weather = function(){
+
+            /* configuration */
+            var config = {
+
+                //define id for zone output
+                outputID: 'output',
+
+                //define id for zone input
+                inputID: 'input',
+
+                //define id for button solve
+                buttID: 'solve' 
+            }; 
+
+            /* initialization */
+            function init(o) {
+
+                 if(o && o.outputID) {
+
+                    config.outputID = o.outputID; 
+                 }
+
+                 if(o && o.inputID) {
+
+                    config.inputID = o.inputID; 
+                 }
+
+                 if(o && o.buttID) {
+
+                    config.buttID = o.buttID; 
+                 }
+
+                 var butt = DOMhelp.$(config.buttID);
+
+                 if(!butt){return;}
+
+                 DOMhelp.addEvent(butt,'click',handleClick,false);
+
+            };//end function
+
+            function handleClick(e) {
+
+                 var location = DOMhelp.$(config.inputID).value;
+
+                 if(!/^([a-zA-Z]+)$/.test(location)) {DOMhelp.$(config.inputID).style.border = '1px solid #c00';return;}
+
+                            else {DOMhelp.$(config.inputID).style.border = '1px solid #ccc';}
+
+                     DOMhelp.$(config.outputID).innerHTML = 'Loading...';
+
+                     var root = 'http://query.yahooapis.com/v1/public/yql?q=';
+
+                     var yql = 'use "http://thinkphp.ro/apps/YQL/weather-forecast/weather.woeid.xml" as weather; select * from weather where location="'+location+'" and unit="c";';
+
+                     var src = root + encodeURIComponent(yql) + '&format=json&callback=weather.seed';
+
+                     loadScript(src,function(){if(window.console){console.log(yql)}}); 
+
+            };//end function
+
+            function seed(o) {
+
+                     var returnObject = o.query.results.weather.rss.channel.item.description;
+
+                     var title = '<p style="color: blue"><strong>'+o.query.results.weather.rss.channel.item.title+'</strong></p>'; 
+
+                     DOMhelp.$(config.outputID).innerHTML = title + returnObject;
+
+            };//end function
+
+            function loadScript(url, callback){
+
+                 var script = document.createElement("script");
+
+                     script.type = "text/javascript";
+
+                 if (script.readyState){  //IE
+
+                            script.onreadystatechange = function(){
+
+                                   if (script.readyState == "loaded" ||
+
+                                              script.readyState == "complete"){
+
+                                                     script.onreadystatechange = null;
+
+                                                     callback();
+                                               }
+                 };
+
+                 } else {  //Others
+
+                          script.onload = function(){
+
+                          callback();
+                       };
+               }
+
+               script.src = url;
+
+               document.getElementsByTagName("head")[0].appendChild(script);
+
+            }//end function
+
+  //return an object with private methods revealed
+  return {init: init, seed: seed}; 
+  
+}();//do Exec
+
+weather.init({inputID: 'location',outputID: 'results',buttID: 'search'});
+
+</script>
+</body>
+</html>
+

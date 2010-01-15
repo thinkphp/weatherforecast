@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+   <title>Display the local weather with a simple badge</title>
+   <link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/reset-fonts-grids/reset-fonts-grids.css" type="text/css">
+   <link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/base/base.css" type="text/css">
+   <style type="text/css">
+  html,body{background:#666;color:#000;}
+  textarea{width:725px;padding:10px;margin:1em 0;border:2px solid #999;height:3em;}
+  label{padding-right:1em;font-weight:bold;}
+  input[type=submit]{margin-left:1em;}
+  h2{color:#369;}
+  h1{color:#036;margin:0;}
+  #doc{background:#fff;border:1em solid #fff;-moz-border-radius:5px;font-family:calibri,helvetica,arial,sans-serif;}
+  #message{font-weight:bold;margin:1em 0;color:#090;}
+  form div.bar{border:2px solid #ADFF92;-moz-border-radius:5px;background:#DDFFD2;padding:5px;}
+  #badge{position:absolute;left:-9000px;}
+  p,li{font-family:arial,sans-serif;}
+  p a{color:#333;}
+  #ft p{font-size:80%;font-weight:bold;text-align:right;padding-top:3em;}
+ </style>
+</head>
+<body>
+<div id="doc" class="yui-t7">
+   <div id="hd" role="banner"><h1>Display the local weather with a simple badge</h1></div>
+   <div id="bd" role="main">
+	<div class="yui-g">
+    <div class="yui-u first">
+        <h2>What is it?</h2>
+        <p>Here's the solution if you always wanted to display the local weather on yout web site, blog or other document but you 
+        don't want to install plug-ins or read up on documentation how to do that.</p>
+        <p>If you want a badge like the one on your right, simply enter your information in the form below and 'hit' the generate button</p>
+    </div>
+    <div class="yui-u">
+        <h2>Local Weather Badge</h2>
+    <script type="text/javascript" src="weather.js">city:bucharest,units:c,styling:true</script>
+    </div>
+</div>
+<h2>Create Your Own Badge</h2>
+<div class="yui-g">
+<form id="maker" method="" action="">
+  <div class="bar">
+    <label for="location">Your City:</label>
+    <input type="text" id="location">
+    <input type="radio" name="unit" value="c" id="ce" checked="checked"><label for="ce"> Use Celsius</label>
+    <input type="radio" name="unit" value="f" id="fa"><label for="fa"> Use Fahrenheit</label>
+    <input type="checkbox" name="style" id="st"><label for="st"> Don't apply any styling</label>
+    <input type="submit" value="generate" id="generate" />
+    </div><div id="message"></div>
+    <div><textarea id="badge" rows="8" cols="40"></textarea></div>
+</form>
+</div>
+
+	</div>
+   <div id="ft" role="contentinfo"><p>Written By Adrian Statescu using YUI and <a href="http://thinkphp.ro/apps/YQL/weather-forecast/weather.woeid.xml">YQL Execute Open Data Table</a></p></div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+ 
+  (function(){  
+      document.getElementById('maker').onsubmit = function(){
+
+               //get Element with ID 'message'
+               var m = document.getElementById('message');
+
+                   //set innerHTML ''
+                   m.innerHTML = '';
+ 
+                   //get element with ID 'badge'
+                   var badge = document.getElementById('badge');
+
+                   //if element with ID 'ce' is checked then we have degree celsius else we have degree Fahrenreit
+                   var u = document.getElementById('ce').checked ? 'c' : 'f';   
+
+                   //if element with id 'st' is checked then we don't have style within badge
+                   var s = document.getElementById('st').checked ? 'false' : 'true';   
+
+                   //get location value
+                   var location = encodeURIComponent(document.getElementById('location').value); 
+
+                   //define code badge local weather 
+                   var code = '<scr'+'ipt type="text/javascript" src="http://thinkphp.ro/apps/YQL/weather-forecast/weather-badge/weather.js">city:'+location+',units:'+u+',styling:'+s+'</sc'+'ript>';
+
+                   //set position badge relative
+                   badge.style.position = 'relative';
+
+                   //set position left equal 0
+                   badge.style.left = '0'; 
+
+                   //set value with code script
+                   badge.value = code;
+
+                   //define REST API
+                   var src = "http://query.yahooapis.com/v1/public/yql?q=use%20%22http%3A%2F%2Fthinkphp.ro%2Fapps%2FYQL%2Fweather-forecast%2Fweather.woeid.xml%22%20as%20weather%3B%20select%20*%20from%20weather%20where%20location%3D%22"+location+"%22%20and%20unit%3D%22"+u+"%22&format=json&diagnostics=false&callback=yahooweatherbadge.seed";
+
+                   //load JSON into SCRIPT NODE and called yahooweatherbadge.seed(o) o - json object
+                   loadScript(src,function(){if(window.console){console.log(src);}});
+
+           return false;
+
+      }//end onsubmit
+
+      //function that create a SCRIPT NODE with src passed args
+      //@param url (String) - src to script node
+      //@param callback (String) - function to fired when the script node is created
+      function loadScript(url, callback){
+
+         var script = document.createElement("script")
+             script.type = "text/javascript";
+             if (script.readyState){  //IE
+                 script.onreadystatechange = function(){
+             if (script.readyState == "loaded" ||
+                    script.readyState == "complete"){
+                script.onreadystatechange = null;
+                callback();
+            }
+            };
+            } else {  //Others
+              script.onload = function(){
+              callback();
+            };
+         }
+         script.src = url;
+         document.getElementsByTagName("head")[0].appendChild(script);
+      }
+  })();//do EXEC
+</script>
+</body>
+</html>
